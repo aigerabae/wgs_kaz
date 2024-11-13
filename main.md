@@ -48,12 +48,12 @@ plink/plink --bfile estonian2 --bmerge turkic --make-bed --out estonian3
 Merging HGDP dataset with estonian datasets:
 ```bash
 # didn't do yet
-
 ```
 
 Vcf kazakh to plink:
 ```bash
-plink/plink --vcf ../kz_235_hg19_dragen.vcf --double-id --make-bed --out kaz
-# currently waiting for this process to finish
+plink/plink --vcf ../kz_235_hg19_dragen.vcf --double-id --allow-extra-chr --make-bed --out kaz
 ```
-Now need to 1) my vcf to plink; 2) keep only snps from my referent datasets; 3) run admixture and PCA
+
+Problem - vcf file doesn't have rsIDs. Solution - take them from annotated version
+Now need to 2) keep only snps from my referent datasets; 3) run admixture and PCA
