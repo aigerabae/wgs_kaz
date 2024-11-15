@@ -55,5 +55,45 @@ Vcf kazakh to plink:
 plink/plink --vcf ../kz_235_hg19_dragen.vcf --double-id --allow-extra-chr --make-bed --out kaz
 ```
 
+Getting rsIDs:
+1) making rsID - location dictionary
+```bash
+cat kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt | head -n 200 > graphs/header_vcf.tsv
+awk -F'\t' '{print $452 "\t" $453 "\t" $454 "\t" $455 "\t" $456 "\t" $21}' kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt > graphs/snp_data.txt
+```
+
+Script to check for duplicates in the dictionary:
+```bash
+#!/bin/bash
+
+# Input SNP data file
+SNP_DATA="snp_data.txt"
+
+# Check for duplicate chromosome-start-end triplets
+awk '{
+    key = $1 ":" $2 ":" $3;  # Combine Chromosome (col 1), Start (col 2), End (col 3) as key
+    if (key in seen) {
+        print "Duplicate found: " key;
+        duplicates = 1;
+    } else {
+        seen[key] = 1;
+    }
+}
+END {
+    if (!duplicates) {
+        print "No duplicates found in chromosome-start-end triplets.";
+    }
+}' "$SNP_DATA"
+```
+
+Script to 
+1) count exact matches between dictionary and bim file
+2) if they are 100% make the bim file with updated rsIDs:
+```bash
+
+```
+
+3) copying to local computer: in file: control + L -> sftp://dell_815@10.1.131.145 -> password -> copying to biostar/wgs/
+
 Problem - vcf file doesn't have rsIDs. Solution - take them from annotated version
 Now need to 2) keep only snps from my referent datasets; 3) run admixture and PCA
