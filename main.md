@@ -59,7 +59,7 @@ Getting rsIDs:
 1) making rsID - location dictionary
 ```bash
 cat kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt | head -n 200 > graphs/header_vcf.tsv
-awk -F'\t' '{print $452 "\t" $453 "\t" $454 "\t" $455 "\t" $456 "\t" $21}' kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt > graphs/snp_data.txt
+awk -F'\t' '{print $452 "\t" $453 "\t" $455 "\t" $456 "\t" $21}' kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt > graphs/snp_data.txt
 ```
 
 Script to check for duplicates in the dictionary:
@@ -88,6 +88,28 @@ END {
 
 Script to 
 1) count exact matches between dictionary and bim file
+
+```bash
+#!/bin/bash
+# Script to count matching lines between kaz.bim and snp_data.tsv
+
+# Ensure input files exist
+if [[ ! -f "kaz.bim" || ! -f "snp_data.tsv" ]]; then
+    echo "Error: Required files kaz.bim or snp_data.tsv not found!"
+    exit 1
+fi
+
+# Count matching lines
+match_count=$(awk 'BEGIN {FS=OFS="\t"} 
+    NR==FNR {dict[$1"\t"$2"\t"$3"\t"$4]=1; next} 
+    {key=$1"\t"$4"\t"$5"\t"$6; 
+    if (key in dict) count++} 
+    END {print count}' snp_data.txt kaz.bim)
+
+echo "Number of matching lines: $match_count"
+```
+Problem - only 10160 matches!
+ 
 2) if they are 100% make the bim file with updated rsIDs:
 ```bash
 
