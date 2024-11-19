@@ -46,8 +46,9 @@ plink/plink --bfile estonian2 --bmerge turkic --make-bed --out estonian3
 ```
 
 Merging HGDP dataset with estonian datasets:
+Maybe just merge them and see from there? since both estonian and kaz data are hg19? i do need rsIDs tho for merging with different datasets if this one is too small
 ```bash
-# didn't do yet
+
 ```
 
 Vcf kazakh to plink:
@@ -59,54 +60,19 @@ Getting rsIDs:
 1) making rsID - location dictionary
 ```bash
 cat kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt | head -n 200 > graphs/header_vcf.tsv
-awk -F'\t' '{print $452 "\t" $453 "\t" $455 "\t" $456 "\t" $21}' kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt > graphs/snp_data.txt
+awk -F'\t' '{print $452 "\t" $453 "\t" $455 "\t" $456 "\t" $21}' kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt > graphs/snp_data.tsv
+cd graphs/
 ```
 
-Script to check for duplicates in the dictionary:
 ```bash
-#!/bin/bash
-
-# Input SNP data file
-SNP_DATA="snp_data.txt"
-
-# Check for duplicate chromosome-start-end triplets
-awk '{
-    key = $1 ":" $2 ":" $3;  # Combine Chromosome (col 1), Start (col 2), End (col 3) as key
-    if (key in seen) {
-        print "Duplicate found: " key;
-        duplicates = 1;
-    } else {
-        seen[key] = 1;
-    }
-}
-END {
-    if (!duplicates) {
-        print "No duplicates found in chromosome-start-end triplets.";
-    }
-}' "$SNP_DATA"
+awk '{key=$1":"$2":"$3; if (key in seen) {print "Duplicate found: " key; duplicates=1} else {seen[key]=1}} END {if (!duplicates) print "No duplicates found in chromosome-start-end triplets."}' snp_data.tsv
 ```
 
 Script to 
 1) count exact matches between dictionary and bim file
 
 ```bash
-#!/bin/bash
-# Script to count matching lines between kaz.bim and snp_data.tsv
-
-# Ensure input files exist
-if [[ ! -f "kaz.bim" || ! -f "snp_data.tsv" ]]; then
-    echo "Error: Required files kaz.bim or snp_data.tsv not found!"
-    exit 1
-fi
-
-# Count matching lines
-match_count=$(awk 'BEGIN {FS=OFS="\t"} 
-    NR==FNR {dict[$1"\t"$2"\t"$3"\t"$4]=1; next} 
-    {key=$1"\t"$4"\t"$5"\t"$6; 
-    if (key in dict) count++} 
-    END {print count}' snp_data.txt kaz.bim)
-
-echo "Number of matching lines: $match_count"
+[[ -f kaz.bim && -f snp_data.tsv ]] && echo "Number of matching lines: $(awk 'BEGIN {FS=OFS="\t"} NR==FNR {dict[$1"\t"$2"\t"$3"\t"$4]=1; next} {if (($1"\t"$4"\t"$5"\t"$6) in dict) count++} END {print count}' snp_data.tsv kaz.bim)" || echo "Error: Required files kaz.bim or snp_data.tsv not found!"
 ```
 Problem - only 10160 matches!
  
@@ -115,7 +81,8 @@ Problem - only 10160 matches!
 
 ```
 
+
 3) copying to local computer: in file: control + L -> sftp://dell_815@10.1.131.145 -> password -> copying to biostar/wgs/
 
-Problem - vcf file doesn't have rsIDs. Solution - take them from annotated version
+Problem - vcf file doesn't have rsIDs. Solution - take them from annotated version. Problem: when i make a dictionary it only has 10000 matches between chr/position/ref/alt in dictionary and plink file
 Now need to 2) keep only snps from my referent datasets; 3) run admixture and PCA
