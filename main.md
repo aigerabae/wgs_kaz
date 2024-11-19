@@ -96,3 +96,10 @@ awk -F'\t' '$5 != "." {count++} END {print count}' snp_data.tsv
 awk -F'\t' '$5 != "."' snp_data.tsv > snp_data2.tsv
 
 ```
+Problem:
+cat kz_235_hg19_dragen.vcf | wc -l
+26606334
+wc -l kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt 
+30692645 
+
+I made plink file with regular version while annotated contains more SNPs!
