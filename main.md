@@ -86,3 +86,13 @@ Problem - only 10160 matches!
 
 Problem - vcf file doesn't have rsIDs. Solution - take them from annotated version. Problem: when i make a dictionary it only has 10000 matches between chr/position/ref/alt in dictionary and plink file
 Now need to 2) keep only snps from my referent datasets; 3) run admixture and PCA
+
+Let's count hpw many rsIDs I have in total:
+```bash
+awk -F'\t' '$5 != "." {count++} END {print count}' snp_data.tsv
+
+# 23573705 rsIDs and 7118940 missing. not bad. now let's extract them for our refined dictionary
+
+awk -F'\t' '$5 != "."' snp_data.tsv > snp_data2.tsv
+
+```
