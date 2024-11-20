@@ -52,8 +52,14 @@ Merging HGDP dataset with estonian datasets:
 
 Vcf kazakh to plink:
 ```bash
-plink/plink2 --vcf ../kz_235_hg19_dragen.vcf --double-id --allow-extra-chr --set-missing-var-ids @:#_hg19 --split-par hg19 --make-bed --out kaz
+plink/plink2 --vcf ../kz_235_hg19_dragen.vcf --double-id --allow-extra-chr --set-missing-var-ids @:#_hg19 --impute-sex --split-par hg19 --make-bed --out kaz
 ```
+
+imputed (0 female, 78 male). Report written to kaz.sexcheck .
+Writing kaz.fam ... done.
+Writing kaz.bim ... 
+Error: kaz.bim cannot contain multiallelic variants.
+
 
 Merging kaz data with estonian:
 ```bash
