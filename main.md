@@ -120,7 +120,7 @@ Need to make ethnic_final.tsv! and get plot_eigenvec.py on the server
 # admixture
 plink/plink --bfile kaz_est3 --indep-pairwise 1000 150 0.4 --out pruned_data
 plink/plink --bfile kaz_est3 --extract pruned_data.prune.in --make-bed --out kaz_est4
-for K in 8; do admixture/admixture --cv kaz_est4.bed -j8 $K | tee log${K}.out; done
+nohup bash -c 'for K in 5 8 12; do admixture/admixture --cv kaz_est4.bed -j32 $K | tee log${K}.out; done' > nohup.out 2>&1 &
 
 #awk '{print $1}' kaz_est4.fam | grep -Fwf - ethnic2.txt > ethnic3.txt
 
