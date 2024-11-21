@@ -55,7 +55,7 @@ Vcf kazakh to plink:
 plink/plink2 --vcf ../kz_235_hg19_dragen.vcf \
       --double-id \
       --allow-extra-chr \
-      --set-missing-var-ids @:#_hg19 \
+      --set-missing-var-ids @:#_hg19_\$r_\$a \
       --impute-sex \
       --split-par hg19 \
       --max-alleles 2 \
@@ -63,10 +63,22 @@ plink/plink2 --vcf ../kz_235_hg19_dragen.vcf \
       --out kaz
 ```
 
-imputed (0 female, 78 male). Report written to kaz.sexcheck .
-Writing kaz.fam ... done.
-Writing kaz.bim ... 
-Error: kaz.bim cannot contain multiallelic variants.
+```bash
+awk '{print $1, $4, $4, 1}' kaz.bim > kaz_positions.txt
+awk '{print $1, $4, $4, 1}' estonian3.bim > estonian3_positions.txt
+
+comm -12 <(sort kaz_positions.txt) <(sort estonian3_positions.txt) > common_positions.txt
+
+plink/plink2 --bfile estonian3 --extract range common_positions.txt --make-bed --out estonian4
+plink/plink2 --bfile kaz --extract range common_positions.txt --make-bed --out kaz1
+
+join -j 1 <(awk '{print $1":"$4, $2}' estonian4.bim | sort -k1,1) <(awk '{print $1":"$4, $2}' kaz1.bim | sort -k1,1) | awk '{print $2, $3}' > update_ids.txt
+plink/plink2 --bfile kaz1 --update-name update_ids.txt 1 2 --make-bed --out kaz2
+```
+
+problem - estonian4 and kaz1 have different lengths! - solved by using join
+problem - update ids has non unique ids! - trying to solve using a different vcf command
+
 
 
 Merging kaz data with estonian:
