@@ -43,11 +43,23 @@ wget https://evolbio.ut.ee/jew/jew_paper_data_dbSNP-b131_pos-b37_1KG_strand.bed
 plink/plink --bfile caucasus_paper_data_dbSNP-b131_pos-b37_1KG_strand --bmerge jew_paper_data_dbSNP-b131_pos-b37_1KG_strand --make-bed --out ./estonian1
 plink/plink --bfile estonian1 --bmerge sakha_paper_data_dbSNP-b131_pos-b37_1KG_strand --make-bed --out estonian2
 plink/plink --bfile estonian2 --bmerge turkic --make-bed --out estonian3
+cat kaz_est_hgdp_metadata.tsv | awk '{print $1 "\t" $1}' > ethnic.txt 
+plink/plink --bfile estonian3 --keep ethnic.txt --make-bed --out estonian4
 ```
 
 Merging HGDP dataset with estonian datasets:
 ```bash
-
+plink/plink --file HGDP --make-bed --out hgdp
+comm -12 <(awk '{print $2}' estonian4.bim | sort) <(awk '{print $2}' hgdp.bim | sort) > common_snps.txt
+cat estonian4.bim | awk '{print $2"\t" $1}' > dictionary_chr
+cat estonian4.bim | cut -f 2,4 > dictionary_pos
+plink/plink --bfile hgdp --extract common_snps.txt --make-bed --out hgdp1
+plink/plink2 --bfile hgdp1 --update-chr dictionary_chr --update-map dictionary_pos --sort-vars --make-pgen --out hgdp2
+plink/plink2 --pfile hgdp2 --make-bed --out hgdp3
+plink/plink --bfile estonian4 --bmerge hgdp3.bed hgdp3.bim hgdp3.fam --make-bed --out ref1
+plink/plink --bfile hgdp3 --exclude ref1-merge.missnp --biallelic-only strict --make-bed --out hgdp4
+plink/plink --bfile estonian4 --exclude ref1-merge.missnp --biallelic-only strict --make-bed --out estonian5
+plink/plink --bfile estonian5 --bmerge hgdp4.bed hgdp4.bim hgdp4.fam --make-bed --out ref2
 ```
 
 Vcf kazakh to plink:
@@ -73,59 +85,61 @@ plink/plink2 --bfile kaz \
 
 
 awk '{print $1, $4, $4, 1}' kaz1.bim > kaz_positions.txt
-awk '{print $1, $4, $4, 1}' estonian3.bim > estonian3_positions.txt
+awk '{print $1, $4, $4, 1}' ref2.bim > ref2_positions.txt
 
-comm -12 <(sort kaz_positions.txt) <(sort estonian3_positions.txt) > common_positions.txt
+comm -12 <(sort kaz_positions.txt) <(sort ref2_positions.txt) > common_positions.txt
 
-plink/plink2 --bfile estonian3 --extract range common_positions.txt --make-bed --out estonian4
+plink/plink2 --bfile ref2 --extract range common_positions.txt --make-bed --out ref3
 plink/plink2 --bfile kaz1 --extract range common_positions.txt --make-bed --out kaz2
 
-join -j 1 <(awk '{print $1":"$4, $2}' estonian4.bim | sort -k1,1) <(awk '{print $1":"$4, $2}' kaz2.bim | sort -k1,1) | awk '{print $2, $3}' > update_ids.txt
+join -j 1 <(awk '{print $1":"$4, $2}' ref3.bim | sort -k1,1) <(awk '{print $1":"$4, $2}' kaz2.bim | sort -k1,1) | awk '{print $2, $3}' > update_ids.txt
 awk '!seen[$2]++' update_ids.txt > update_ids2.txt
 plink/plink2 --bfile kaz2 --update-name update_ids2.txt 1 2 --make-bed --out kaz3
 ```
 
-problem - estonian4 and kaz1 have different lengths! - solved by using join
+problem - estonian5 and kaz1 have different lengths! - solved by using join
 problem - update ids has non unique ids! - trying to solve using a different vcf command; didn't help. i removed duplicates and it worked!
 
 
 
-Merging kaz data with estonian:
+Merging kaz data with estonian+hgdp:
 ```bash
-plink/plink --bfile estonian4 \
+plink/plink --bfile ref3 \
       --bmerge kaz3 \
       --make-bed \
-      --out kaz_est
+      --out kaz_ref
 
-plink/plink --bfile estonian4 --exclude kaz_est-merge.missnp --make-bed --out estonian5
-plink/plink --bfile kaz3 --exclude kaz_est-merge.missnp --make-bed --out kaz4
+plink/plink --bfile ref3 --exclude kaz_ref-merge.missnp --make-bed --out ref4
+plink/plink --bfile kaz3 --exclude kaz_ref-merge.missnp --make-bed --out kaz4
 
-plink/plink --bfile estonian5 \
+plink/plink --bfile ref4 \
       --bmerge kaz4 \
       --make-bed \
-      --out kaz_est
+      --out kaz_ref1
 
-plink/plink --bfile kaz_est --geno 0.02 --make-bed --out kaz_est1
-plink/plink --bfile kaz_est1 --mind 0.02 --make-bed --out kaz_est2
-plink/plink --bfile kaz_est2 --maf 0.001 --make-bed --out kaz_est3
+plink/plink --bfile kaz_ref1 --geno 0.02 --make-bed --out kaz_ref2
+plink/plink --bfile kaz_ref2 --mind 0.02 --make-bed --out kaz_ref3
+plink/plink --bfile kaz_ref3 --maf 0.001 --make-bed --out kaz_ref4
+plink/plink --bfile kaz_ref4 --keep ethnic.txt --make-bed --out kaz_ref5
+```
 
+```bash
 cat kaz4.fam | cut -d " " -f 1 > kaz_samples.txt
 
 #pca
-plink/plink2 --bfile kaz_est3 --pca 10 --out all_pca
-
-Need to make ethnic_final.tsv! and get plot_eigenvec.py on the server
-#python plot_eigenvec.py all_pca.eigenvec ethnic_final.tsv
+plink/plink2 --bfile kaz_ref5 --pca 10 --out all_pca
+awk '{print $1}' kaz_ref5.fam | grep -Fwf - kaz_est_hgdp_metadata.tsv > ethnic2.txt
+python plot_eigenvec.py all_pca.eigenvec ethnic2.txt
 
 # admixture
-plink/plink --bfile kaz_est3 --indep-pairwise 1000 150 0.4 --out pruned_data
-plink/plink --bfile kaz_est3 --extract pruned_data.prune.in --make-bed --out kaz_est4
-nohup bash -c 'for K in 5 8 12; do admixture/admixture --cv kaz_est4.bed -j32 $K | tee log${K}.out; done' > nohup.out 2>&1 &
+plink/plink --bfile kaz_ref5 --indep-pairwise 1000 150 0.4 --out pruned_data
+plink/plink --bfile kaz_ref5 --extract pruned_data.prune.in --make-bed --out kaz_ref6
+awk '{print $1}' kaz_ref6.fam | grep -Fwf - ethnic2.txt > ethnic3.txt
+nohup bash -c 'for K in 5 8 12; do admixture/admixture --cv kaz_ref6.bed -j32 $K | tee log${K}.out; done' > nohup.out 2>&1 &
 
-#awk '{print $1}' kaz_est4.fam | grep -Fwf - ethnic2.txt > ethnic3.txt
-
+cat ethnic3.txt | awk '{print $2"\t" $1}'  > ethnic3.ind 
+perl admixture/AncestryPainter.pl -i ethnic3.ind -q ./kaz_ref6.8.Q -t Kazakh -o Kazakh -f png```
 ```
-
 
 Top Tip: remove indels and merge by position:
  
