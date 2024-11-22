@@ -142,4 +142,24 @@ perl admixture/AncestryPainter.pl -i ethnic3.ind -q ./kaz_ref6.8.Q -t Kazakh -o 
 ```
 
 Top Tip: remove indels and merge by position:
- 
+
+Getting MAFs for pharmacogenes:
+```bash
+awk -F'\t' '{print $21, $449}' ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt > columns_21_449.txt
+
+Search for these:
+rs2108622
+rs3745274
+rs3745274
+rs4148323
+rs2070959
+rs4988235
+rs1573496
+rs671
+rs4148323
+rs2056900
+rs2076740
+rs189261858
+
+How to kill admixture process:
+kill -9 `pgrep admixture`
