@@ -120,6 +120,7 @@ plink/plink --bfile ref4 \
 plink/plink --bfile kaz_ref1 --geno 0.02 --make-bed --out kaz_ref2
 plink/plink --bfile kaz_ref2 --mind 0.02 --make-bed --out kaz_ref3
 plink/plink --bfile kaz_ref3 --maf 0.001 --make-bed --out kaz_ref4
+
 plink/plink --bfile kaz_ref4 --keep ethnic.txt --make-bed --out kaz_ref5
 ```
 
