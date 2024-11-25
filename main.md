@@ -23,6 +23,8 @@ cd plink
 wget https://s3.amazonaws.com/plink1-assets/plink_linux_x86_64_20241022.zip
 unzip plink_linux_x86_64_20241022.zip
 chmod +x plink
+
+# similarly i added plink2 in the same directory. i also installed admixture in another folder like this
 ```
 
 Estonian dataset:
@@ -100,8 +102,6 @@ plink/plink2 --bfile kaz2 --update-name update_ids2.txt 1 2 --make-bed --out kaz
 problem - estonian5 and kaz1 have different lengths! - solved by using join
 problem - update ids has non unique ids! - trying to solve using a different vcf command; didn't help. i removed duplicates and it worked!
 
-
-
 Merging kaz data with estonian+hgdp:
 ```bash
 plink/plink --bfile ref3 \
@@ -137,29 +137,52 @@ plink/plink --bfile kaz_ref5 --extract pruned_data.prune.in --make-bed --out kaz
 awk '{print $1}' kaz_ref6.fam | grep -Fwf - ethnic2.txt > ethnic3.txt
 nohup bash -c 'for K in 5 8 12; do admixture/admixture --cv kaz_ref6.bed -j32 $K | tee log${K}.out; done' > nohup.out 2>&1 &
 
-cat ethnic3.txt | awk '{print $2"\t" $1}'  > ethnic3.ind 
-perl admixture/AncestryPainter.pl -i ethnic3.ind -q ./kaz_ref6.8.Q -t Kazakh -o Kazakh -f png```
+cat ethnic3.txt | awk '{print $2"\t" $1}'  > ethnic3.ind
+perl admixture/AncestryPainter.pl -i ethnic3.ind -q ./kaz_ref6.5.Q -t Kazakh -o Kazakh_5 -f png
+perl admixture/AncestryPainter.pl -i ethnic3.ind -q ./kaz_ref6.8.Q -t Kazakh -o Kazakh_8 -f png
+perl admixture/AncestryPainter.pl -i ethnic3.ind -q ./kaz_ref6.12.Q -t Kazakh -o Kazakh_12 -f png
 ```
-
-Top Tip: remove indels and merge by position:
 
 Getting MAFs for pharmacogenes:
 ```bash
 awk -F'\t' '{print $21, $449}' ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt > columns_21_449.txt
+```
 
-Search for these:
-rs2108622
-rs3745274
-rs3745274
-rs4148323
-rs2070959
-rs4988235
-rs1573496
-rs671
-rs4148323
-rs2056900
-rs2076740
-rs189261858
+Search for these in columns_21_449.txt:
+```bash
+grep -w rs2108622 columns_21_449.txt
+grep -w rs3745274 columns_21_449.txt
+grep -w rs3745274 columns_21_449.txt
+grep -w rs4148323 columns_21_449.txt
+grep -w rs2070959 columns_21_449.txt
+grep -w rs4988235 columns_21_449.txt
+grep -w rs1573496 columns_21_449.txt
+grep -w rs671 columns_21_449.txt
+grep -w rs4148323 columns_21_449.txt
+grep -w rs2056900 columns_21_449.txt
+grep -w rs2076740 columns_21_449.txt
+grep -w rs189261858 columns_21_449.txt
+```
+
+Searching for these same SNPs in my GWAS dataset in local computer/biostar/gwas/redo_july/annotation/
+```bash
+cat autosomal_224_ext_for_annovar.vcf | cut -f 1,2,3,4,5,234 | grep -w rs2108622
+cat autosomal_224_ext_for_annovar.vcf | cut -f 1,2,3,4,5,234 | grep -w rs3745274
+cat autosomal_224_ext_for_annovar.vcf | cut -f 1,2,3,4,5,234 | grep -w rs3745274
+cat autosomal_224_ext_for_annovar.vcf | cut -f 1,2,3,4,5,234 | grep -w rs4148323
+cat autosomal_224_ext_for_annovar.vcf | cut -f 1,2,3,4,5,234 | grep -w rs2070959
+cat autosomal_224_ext_for_annovar.vcf | cut -f 1,2,3,4,5,234 | grep -w rs4988235
+cat autosomal_224_ext_for_annovar.vcf | cut -f 1,2,3,4,5,234 | grep -w rs1573496
+cat autosomal_224_ext_for_annovar.vcf | cut -f 1,2,3,4,5,234 | grep -w rs671
+cat autosomal_224_ext_for_annovar.vcf | cut -f 1,2,3,4,5,234 | grep -w rs4148323
+cat autosomal_224_ext_for_annovar.vcf | cut -f 1,2,3,4,5,234 | grep -w rs2056900
+cat autosomal_224_ext_for_annovar.vcf | cut -f 1,2,3,4,5,234 | grep -w rs2076740
+cat autosomal_224_ext_for_annovar.vcf | cut -f 1,2,3,4,5,234 | grep -w rs189261858
+```
 
 How to kill admixture process:
+```bash
 kill -9 `pgrep admixture`
+```
+
+Idea: use the same ref datasets as successful admixture plots such as at https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0135820#sec013
