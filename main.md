@@ -189,6 +189,7 @@ kill -9 `pgrep admixture`
 Idea: use the same ref datasets as successful admixture plots such as at https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0135820#sec013
 
 Annovared:
+```bash
 cut -f25,26,27,35,36,37,41,43,45,285,287,288,302,304,305 ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt > extracted_columns.txt
 # SAS.sites.2015_08
 awk '$1 == "." {count++} END {print count}' extracted_columns.txt
@@ -224,3 +225,4 @@ awk '$13 == "." {count++} END {print count}' extracted_columns.txt
 awk '$14 == "." {count++} END {print count}' extracted_columns.txt
 # AF_nfe 2
 awk '$15 == "." {count++} END {print count}' extracted_columns.txt
+```
