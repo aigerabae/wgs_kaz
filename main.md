@@ -187,3 +187,40 @@ kill -9 `pgrep admixture`
 ```
 
 Idea: use the same ref datasets as successful admixture plots such as at https://journals.plos.org/plosone/article?id=10.1371/journal.pone.0135820#sec013
+
+Annovared:
+cut -f25,26,27,35,36,37,41,43,45,285,287,288,302,304,305 ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt > extracted_columns.txt
+# SAS.sites.2015_08
+awk '$1 == "." {count++} END {print count}' extracted_columns.txt
+# EUR.sites.2015_08
+awk '$2 == "." {count++} END {print count}' extracted_columns.txt
+# EAS.sites.2015_08
+awk '$3 == "." {count++} END {print count}' extracted_columns.txt
+
+# 1000 g eas
+awk '$4 == "." {count++} END {print count}' extracted_columns.txt
+# 1000 g eur
+awk '$5 == "." {count++} END {print count}' extracted_columns.txt
+# 1000 g sas
+awk '$6 == "." {count++} END {print count}' extracted_columns.txt
+
+# exac g eas
+awk '$7 == "." {count++} END {print count}' extracted_columns.txt
+# exac g eur
+awk '$8 == "." {count++} END {print count}' extracted_columns.txt
+# exac sas
+awk '$9 == "." {count++} END {print count}' extracted_columns.txt
+
+# AF_sas
+awk '$10 == "." {count++} END {print count}' extracted_columns.txt
+# AF_eas
+awk '$11 == "." {count++} END {print count}' extracted_columns.txt
+# AF_nfe
+awk '$12 == "." {count++} END {print count}' extracted_columns.txt
+
+# AF_sas 2
+awk '$13 == "." {count++} END {print count}' extracted_columns.txt
+# AF_eas 2
+awk '$14 == "." {count++} END {print count}' extracted_columns.txt
+# AF_nfe 2
+awk '$15 == "." {count++} END {print count}' extracted_columns.txt
