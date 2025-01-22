@@ -24,6 +24,7 @@ plink/plink2 --vcf ../kz_235_hg19_dragen.vcf \
 ```
 
 After checking kaz.checksex file I set min female value as 0.3 and min male as 0.8
+```bash
 plink/plink --bfile kaz --impute-sex 0.3 0.8 --allow-extra-chr --make-bed --out kaz1
 plink/plink --bfile kaz1 --geno 0.02 --allow-extra-chr --make-bed --out kaz2
 plink/plink --bfile kaz2 --mind 0.02 --allow-extra-chr --make-bed --out kaz3
@@ -33,7 +34,17 @@ plink/plink --bfile kaz4 --allow-extra-chr --genome --min 0.2 --out pihat_min0.2
 plink/plink --bfile kaz4 --allow-extra-chr --missing --out missing_report
 awk '$10 > 0.2 {print $1, $2, $3, $4}' pihat_min0.2.genome > related_pairs.txt
 plink/plink --bfile kaz4 --allow-extra-chr --remove to_delete.tsv --make-bed --out kaz5
+```
 
+Checking in how many rows the annotated file has different position, ref, alt, and chromosome
+awk '$453 != $2 {count++} END {print count}' ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt
+Answer: 5621379 
+awk '$452 != $1 {count++} END {print count}' ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt
+Answer: 247848
+awk '$455 != $4 {count++} END {print count}' ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt
+Answer: 8150968
+awk '$456 != $5 {count++} END {print count}' ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt
+Answer: 
 
 
 ? this will remove all snps with more than 1 nucleotide in ref/alt, so maybe not do that ?
