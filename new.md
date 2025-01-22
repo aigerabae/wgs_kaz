@@ -21,11 +21,24 @@ plink/plink2 --vcf ../kz_235_hg19_dragen.vcf \
       --new-id-max-allele-len 50 truncate \
       --make-bed \
       --out kaz
-
-
 ```
 
-Need to check .checksex file to observe distributions for better sex imputation
+After checking kaz.checksex file I set min female value as 0.3 and min male as 0.8
+plink/plink --bfile kaz --impute-sex 0.3 0.8 --allow-extra-chr --make-bed --out kaz1
+plink/plink --bfile kaz1 --geno 0.02 --allow-extra-chr --make-bed --out kaz2
+plink/plink --bfile kaz2 --mind 0.02 --allow-extra-chr --make-bed --out kaz3
+plink/plink --bfile kaz3 --allow-extra-chr --maf 0.001 --make-bed --out kaz4
+
+plink/plink --bfile kaz4 --allow-extra-chr --genome --min 0.2 --out pihat_min0.2
+plink/plink --bfile kaz4 --allow-extra-chr --missing --out missing_report
+awk '$10 > 0.2 {print $1, $2, $3, $4}' pihat_min0.2.genome > related_pairs.txt
+plink/plink --bfile kaz4 --allow-extra-chr --remove to_delete.tsv --make-bed --out kaz5
+
+
+
+? this will remove all snps with more than 1 nucleotide in ref/alt, so maybe not do that ?
+plink/plink --bfile kaz5 --snps-only 'just-acgt' --make-bed --out kaz6
+
 Need to get dbSNPs from the annotated file for merging
 
 
