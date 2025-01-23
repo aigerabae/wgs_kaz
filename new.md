@@ -37,15 +37,33 @@ plink/plink --bfile kaz4 --allow-extra-chr --remove to_delete.tsv --make-bed --o
 ```
 
 Checking in how many rows the annotated file has different position, ref, alt, and chromosome
+```bash
 awk '$453 != $2 {count++} END {print count}' ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt
-Answer: 5621379 
+# Answer: 5621379 
 awk '$452 != $1 {count++} END {print count}' ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt
-Answer: 247848
+# Answer: 247848
 awk '$455 != $4 {count++} END {print count}' ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt
-Answer: 8150968
+# Answer: 8150968
 awk '$456 != $5 {count++} END {print count}' ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt
-Answer: 
+# Answer: 8579786
 
+# combined together - having at least 1 mismatch:
+awk '$453 != $2 || $452 != $1 || $455 != $4 || $456 != $5 {count++} END {print count}' ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt
+# answer= 8579787
+
+# how many rsIDs are non NaN
+awk '$21 != "." {count++} END {print count}' ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt
+# Answer: 23602063
+
+# how many are non-NaN and have all matching:
+awk '$21 != "." && $453 == $2 && $452 == $1 && $455 == $4 && $456 == $5 {count++} END {print count}' ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt
+# Answer: 18890966
+```
+
+Let's create a dictionary for rsIDs where all data are matching:
+```bash
+nohup awk '$21 != "." && $453 == $2 && $452 == $1 && $455 == $4 && $456 == $5 {print $1, $2, $3, $4, $5, $21}' ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt > ./rs_dict.txt 2> nohup.log &
+```
 
 ? this will remove all snps with more than 1 nucleotide in ref/alt, so maybe not do that ?
 plink/plink --bfile kaz5 --snps-only 'just-acgt' --make-bed --out kaz6
