@@ -66,28 +66,64 @@ nohup awk '$21 != "." && $453 == $2 && $452 == $1 && $455 == $4 && $456 == $5 {p
 ```
 
 Let's see if i can use just the positions for identifying items in my dictionary or if i need to use ref alt as well:
+```bash
 awk '{key[$1,$4]++} END {for (k in key) if (key[k] > 1) duplicates += (key[k] - 1); print duplicates}' kaz5.bim
 awk '{key[$2,$3]++} END {for (k in key) if (key[k] > 1) duplicates += (key[k] - 1); print duplicates}' rs_dict.txt
+```
 
 Weirdly enough there are duplicates in rs dictionary but not kaz.bim file. so let's make a composite key with all data:
+```bash
 awk 'NR==FNR {key[$1":"$2":"$4":"$5] = $6; next} 
      ($1":"$4":"$5":"$6 in key) {$2 = key[$1":"$4":"$5":"$6]} 
      {print $1, $2, $3, $4, $5, $6}' rs_dict.txt kaz5.bim > kaz5_updated.bim
+```
 
 Let's see how many rsIDs now i have:
+```bash
 awk '$2 ~ /^rs/ {count++} END {print count}' kaz5_updated.bim
+```
 
 I have none... but test version worked fine somehow... Nvermind. I know why it worked fine. I used rsdict in both test files
+```bash
 cat rs_dict.txt | head -n 100000 > test_dict.txt
 cat rs_dict.txt | head -n 10000 > test.bim
 awk 'NR==FNR {key[$1":"$2":"$4":"$5] = $6; next} 
      ($1":"$4":"$5":"$6 in key) {$2 = key[$1":"$4":"$5":"$6]} 
      {print $1, $2, $3, $4, $5, $6}' test_dict.txt test.bim > test_updated.bim
+```
 
 Modifying format of rs_dict.txt to match kaz5.bim:
+```bash
 awk '{gsub(/^chr/, "", $1); print $1, $6, 0, $2, $4, $5}' rs_dict.txt > rs_dict_modified.txt
+```
 
-Nopw let's try to use dictionary again
+There are only 500 matches in my test dataset with 10000 entries and 100000 in dictionary but let's try to run it for real now
+```bash
+awk 'NR==FNR {key[$1":"$4":"$5":"$6] = $2; next} ($1":"$4":"$5":"$6 in key) {$2 = key[$1":"$4":"$5":"$6]} {print $1, $2, $3, $4, $5, $6}' test_dict.txt test.bim > test_updated.bim
+awk '$2 ~ /^rs/ {count++} END {print count}' test_updated.bim
+```
+
+Now let's try to use dictionary again
+```bash
+awk 'NR==FNR {key[$1":"$4":"$5":"$6] = $2; next} ($1":"$4":"$5":"$6 in key) {$2 = key[$1":"$4":"$5":"$6]} {print $1, $2, $3, $4, $5, $6}' rs_dict_modified.txt kaz5.bim > kaz5_updated.bim
+```
+
+Let's see how many rsIDs I have now:
+```bash
+awk '$2 ~ /^rs/ {count++} END {print count}' kaz5_updated.bim
+```
+
+Only 1690061 out of 22962515. Something is wrong here
+What if annotated version does not have those matches? 
+When I try to grep search for them indeed I don't have those matches. Why could that possibly be?
+1) different reference genome
+2) different dataset
+3) I did something wrong in the process of quality control
+Because I made sure that dictionary only contains those SNPs where annotated and original positions and ref/alt are matching with annotated versions, it can't be that. But what else?
+
+
+
+
 
 ? this will remove all snps with more than 1 nucleotide in ref/alt, so maybe not do that ?
 plink/plink --bfile kaz5 --snps-only 'just-acgt' --make-bed --out kaz6
