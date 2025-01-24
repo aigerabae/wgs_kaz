@@ -65,6 +65,30 @@ Let's create a dictionary for rsIDs where all data are matching:
 nohup awk '$21 != "." && $453 == $2 && $452 == $1 && $455 == $4 && $456 == $5 {print $1, $2, $3, $4, $5, $21}' ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt > ./rs_dict.txt 2> nohup.log &
 ```
 
+Let's see if i can use just the positions for identifying items in my dictionary or if i need to use ref alt as well:
+awk '{key[$1,$4]++} END {for (k in key) if (key[k] > 1) duplicates += (key[k] - 1); print duplicates}' kaz5.bim
+awk '{key[$2,$3]++} END {for (k in key) if (key[k] > 1) duplicates += (key[k] - 1); print duplicates}' rs_dict.txt
+
+Weirdly enough there are duplicates in rs dictionary but not kaz.bim file. so let's make a composite key with all data:
+awk 'NR==FNR {key[$1":"$2":"$4":"$5] = $6; next} 
+     ($1":"$4":"$5":"$6 in key) {$2 = key[$1":"$4":"$5":"$6]} 
+     {print $1, $2, $3, $4, $5, $6}' rs_dict.txt kaz5.bim > kaz5_updated.bim
+
+Let's see how many rsIDs now i have:
+awk '$2 ~ /^rs/ {count++} END {print count}' kaz5_updated.bim
+
+I have none... but test version worked fine somehow... Nvermind. I know why it worked fine. I used rsdict in both test files
+cat rs_dict.txt | head -n 100000 > test_dict.txt
+cat rs_dict.txt | head -n 10000 > test.bim
+awk 'NR==FNR {key[$1":"$2":"$4":"$5] = $6; next} 
+     ($1":"$4":"$5":"$6 in key) {$2 = key[$1":"$4":"$5":"$6]} 
+     {print $1, $2, $3, $4, $5, $6}' test_dict.txt test.bim > test_updated.bim
+
+Modifying format of rs_dict.txt to match kaz5.bim:
+awk '{gsub(/^chr/, "", $1); print $1, $6, 0, $2, $4, $5}' rs_dict.txt > rs_dict_modified.txt
+
+Nopw let's try to use dictionary again
+
 ? this will remove all snps with more than 1 nucleotide in ref/alt, so maybe not do that ?
 plink/plink --bfile kaz5 --snps-only 'just-acgt' --make-bed --out kaz6
 
