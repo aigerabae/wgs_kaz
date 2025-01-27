@@ -106,14 +106,41 @@ awk '$2 ~ /^rs/ {count++} END {print count}' test_updated.bim
 Now let's try to use dictionary again
 ```bash
 awk 'NR==FNR {key[$1":"$4":"$5":"$6] = $2; next} ($1":"$4":"$5":"$6 in key) {$2 = key[$1":"$4":"$5":"$6]} {print $1, $2, $3, $4, $5, $6}' rs_dict_modified.txt kaz5.bim > kaz5_updated.bim
+# Only 1.690.061 out of 22.962.515. Something is wrong here
 ```
 
-Let's see how many rsIDs I have now:
+Let's see how many rsIDs I have now in my dictionary:
+```bash
+awk '$2 ~ /^rs/ {count++} END {print count}' rs_dict_modified.txt
+# Answer: 18.890.966
+```
+
+What\s the difference between number of lines in annotated and regular vcf file?
+```bash
+cat ../kz_235_hg19_dragen.vcf | wc -l
+# 26.606.334
+cat ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt | wc -l
+# 30.692.645
+```
+
+Checking for matches between annotated and original:
+```bash
+awk 'FNR==NR {a[$1,$2,$4,$5]++; next} ($1,$2,$4,$5) in a' ../kz_235_hg19_dragen.vcf ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt | wc -l
+#
+
+awk 'FNR==NR {a[$452,$454,$455,$456]++; next} ($1,$2,$4,$5) in a' ../kz_235_hg19_dragen.vcf ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt | wc -l
+#
+```
+
+
+Let's see how many rows we have with rsIDs in dictionary:
 ```bash
 awk '$2 ~ /^rs/ {count++} END {print count}' kaz5_updated.bim
 ```
 
-Only 1690061 out of 22962515. Something is wrong here
+
+
+
 What if annotated version does not have those matches? 
 When I try to grep search for them indeed I don't have those matches. Why could that possibly be?
 1) different reference genome
