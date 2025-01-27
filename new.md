@@ -126,10 +126,10 @@ cat ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt | wc -l
 Checking for matches between annotated and original:
 ```bash
 awk 'FNR==NR {a[$1,$2,$4,$5]++; next} ($1,$2,$4,$5) in a' ../kz_235_hg19_dragen.vcf ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt | wc -l
-#
+# 22345788
 
-awk 'FNR==NR {a[$452,$454,$455,$456]++; next} ($1,$2,$4,$5) in a' ../kz_235_hg19_dragen.vcf ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt | wc -l
-#
+awk 'FNR==NR {a[$1,$2,$4,$5]++; next} ($452,$454,$455,$456) in a' ../kz_235_hg19_dragen.vcf ../kz_235_hg19_dragen.LATEST.annovar.hg19_multianno.header.txt | wc -l
+#  0 somehow
 ```
 
 
